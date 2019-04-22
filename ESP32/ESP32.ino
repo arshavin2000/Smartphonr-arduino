@@ -1,3 +1,11 @@
+/*
+ *  This sketch sends data via HTTP GET requests to data.sparkfun.com service.
+ *
+ *  You need to get streamId and privateKey at data.sparkfun.com and paste them
+ *  below. Or just customize this script to talk to other HTTP servers.
+ *
+ */
+
 
 // Author: Achref Meghirbi & Mohamed Haffez
 
@@ -5,16 +13,15 @@
 
 #include <GxEPD2_BW.h>
 #include <GxEPD2_3C.h>
+#include <WiFi.h>
 #include <Fonts/FreeMonoBold9pt7b.h>
 #include <Fonts/FreeMonoBold12pt7b.h>
-#include <ESP8266WiFi.h>
-#include <ESP8266HTTPClient.h>
+//#include <ESP8266WiFi.h>
+//#include <ESP8266HTTPClient.h>
 #include <WiFiClient.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266mDNS.h>
+//#include <ESP8266WebServer.h>
+//#include <ESP8266mDNS.h>
 #include "ArduinoJson.h"
-
-
 
 
 #if defined (ESP8266)
@@ -33,7 +40,7 @@
 //GxEPD2_3C<GxEPD2_154c, GxEPD2_154c::HEIGHT> display(GxEPD2_154c(/*CS=D8*/ SS, /*DC=D3*/ 0, /*RST=D4*/ 2, /*BUSY=D2*/ 4));
 //GxEPD2_3C<GxEPD2_213c, GxEPD2_213c::HEIGHT> display(GxEPD2_213c(/*CS=D8*/ SS, /*DC=D3*/ 0, /*RST=D4*/ 2, /*BUSY=D2*/ 4));
 //GxEPD2_3C<GxEPD2_290c, GxEPD2_290c::HEIGHT> display(GxEPD2_290c(/*CS=D8*/ 15, /*DC=D3*/ 4, /*RST=D4*/ 5, /*BUSY=D2*/ 16));
-GxEPD2_3C<GxEPD2_270c, GxEPD2_270c::HEIGHT> display(GxEPD2_270c(/*CS=D8*/ 15, /*DC=D3*/ 4, /*RST=D4*/ 5, /*BUSY=D2*/ 16));
+//GxEPD2_3C<GxEPD2_270c, GxEPD2_270c::HEIGHT> display(GxEPD2_270c(/*CS=D8*/ 15, /*DC=D3*/ 4, /*RST=D4*/ 5, /*BUSY=D2*/ 16));
 // can use only half buffer size
 //GxEPD2_3C<GxEPD2_420c, GxEPD2_420c::HEIGHT / 2> display(GxEPD2_420c(/*CS=D8*/ SS, /*DC=D3*/ 0, /*RST=D4*/ 2, /*BUSY=D2*/ 4));
 // can use only quarter buffer size
@@ -73,15 +80,15 @@ GxEPD2_3C<GxEPD2_270c, GxEPD2_270c::HEIGHT> display(GxEPD2_270c(/*CS=D8*/ 15, /*
 //GxEPD2_BW<GxEPD2_154, GxEPD2_154::HEIGHT> display(GxEPD2_154(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
 //GxEPD2_BW<GxEPD2_213, GxEPD2_213::HEIGHT> display(GxEPD2_213(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
 //GxEPD2_BW<GxEPD2_213_flex, GxEPD2_213_flex::HEIGHT> display(GxEPD2_213_flex(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4)); // GDEW0213I5F
-//GxEPD2_BW<GxEPD2_290, GxEPD2_290::HEIGHT> display(GxEPD2_290(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
-//GxEPD2_BW<GxEPD2_290_T5, GxEPD2_290_T5::HEIGHT> display(GxEPD2_290_T5(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4)); // GDEW029T5
+GxEPD2_BW<GxEPD2_290, GxEPD2_290::HEIGHT> display(GxEPD2_290(/*CS=5*/ 2, /*DC=*/ 17, /*RST=*/ -1, /*BUSY=*/ 4));
+//GxEPD2_BW<GxEPD2_290_T5, GxEPD2_290_T5::HEIGHT> display(GxEPD2_290_T5(/*CS=5*/ 17, /*DC=*/ 16, /*RST=*/ 5, /*BUSY=*/ 19)); // GDEW029T5
 //GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> display(GxEPD2_270(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
 //GxEPD2_BW<GxEPD2_420, GxEPD2_420::HEIGHT> display(GxEPD2_420(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
 //GxEPD2_BW<GxEPD2_750, GxEPD2_750::HEIGHT> display(GxEPD2_750(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
 // 3-color e-papers
 //GxEPD2_3C<GxEPD2_154c, GxEPD2_154c::HEIGHT> display(GxEPD2_154c(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
 //GxEPD2_3C<GxEPD2_213c, GxEPD2_213c::HEIGHT> display(GxEPD2_213c(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
-//GxEPD2_3C<GxEPD2_290c, GxEPD2_290c::HEIGHT> display(GxEPD2_290c(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
+//GxEPD2_3C<GxEPD2_290c, GxEPD2_290c::HEIGHT> display(GxEPD2_290c(/*CS=5*/ 17, /*DC=*/ 16, /*RST=*/ 5, /*BUSY=*/ 19));
 //GxEPD2_3C<GxEPD2_270c, GxEPD2_270c::HEIGHT> display(GxEPD2_270c(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
 //GxEPD2_3C<GxEPD2_420c, GxEPD2_420c::HEIGHT> display(GxEPD2_420c(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
 //GxEPD2_3C<GxEPD2_750c, GxEPD2_750c::HEIGHT> display(GxEPD2_750c(/*CS=5*/ SS, /*DC=*/ 17, /*RST=*/ 16, /*BUSY=*/ 4));
@@ -92,65 +99,45 @@ GxEPD2_3C<GxEPD2_270c, GxEPD2_270c::HEIGHT> display(GxEPD2_270c(/*CS=D8*/ 15, /*
 #endif
 
 
-
-//#include "GxEPD2_boards_added.h"
-//#include "GxEPD2_more_boards_added.h" // private
-
-const char* ssid = "TOPNET_9460";
+const char* ssid     = "TOPNET_9460";
 const char* password = "Smile.com123";
 
-ESP8266WebServer server(80);
-IPAddress server1(192,168,1,14); // change with host ip
-IPAddress myIP;       // IP address in your local wifi net
-int count = 0;
-//HTTPClient http;
-
-String content ="";
-String payload="";
-
-
+const char* host = "data.sparkfun.com";
+const char* streamId   = "....................";
+const char* privateKey = "....................";
 
 void setup()
 {
-  Serial.begin(115200);
-  Serial.println();
-  Serial.println("setup");
-  WiFi.mode(WIFI_STA);
-  Serial.println("wifi");
+    Serial.begin(115200);
+    delay(10);
 
-  WiFi.begin(ssid, password);
-  // Connect to WiFi network
-  Serial.println("");
-  Serial.println("");
-  Serial.print("Connected to ");
-  Serial.println(ssid);
+    // We start by connecting to a WiFi network
 
-   // Wait for connection
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
+    Serial.println();
+    Serial.println();
+    Serial.print("Connecting to ");
+    Serial.println(ssid);
 
-  Serial.print("\r\nIP address: ");
-  Serial.println(myIP = WiFi.localIP());
+    WiFi.begin(ssid, password);
 
-  if (MDNS.begin("esp8266")) {
-    Serial.println("MDNS responder started");
-  }
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
 
-  delay(100);
-  display.init(115200);
-  // first update should be full refresh
-  helloWorld("initializing...");
-  //synchronizeWithDataBase();
-  display.powerOff();
-  Serial.println("setup done");
+    Serial.println("");
+    Serial.println("WiFi connected");
+    Serial.println("IP address: ");
+    Serial.println(WiFi.localIP());
+    helloWorld("initializing...");
+
 }
+
+int value = 0;
 
 void loop()
 {
- synchronizeWithDataBase();
- delay(3000);
+   
 }
 
 const char message[] = "Achref Meghirbi";
@@ -166,17 +153,12 @@ void helloWorld(String msg)
   uint16_t x = (display.width() - tbw) / 2;
   uint16_t y = (display.height() + tbh) / 2; // y is base line!
   display.setFullWindow();
-  display.firstPage();
 
-   do
-  {
     display.fillScreen(GxEPD_WHITE);
     display.setCursor(x, y);
     display.print(msg);
-  }
-  while (display.nextPage());
 
-  //Serial.println("helloWorld done");
+  Serial.println("helloWorld done");
 }
 void displayMessages(String msgs[] , String users[])
 {
@@ -229,42 +211,33 @@ void drawCornerTest()
     delay(2000);
   }
 }
-    HTTPClient http;  //Declare an object of class HTTPClient
 
-  WiFiClient client;
-
-void synchronizeWithDataBase() {
-
-client = WiFiClient(); 
+/*void synchronizeWithDataBase() {
   count = 0;
-  DynamicJsonBuffer jsonBuffer;
+  StaticJsonBuffer<3000> jsonBuffer;
    if (WiFi.status() == WL_CONNECTED) { //Check WiFi connection status
 
-if (client.connect(server1, 80)) {
-      Serial.println("connected");
-    String globalUrl = "http://192.168.1.14:8080/api/messages/1";
-    Serial.println(globalUrl);
+    HTTPClient http;  //Declare an object of class HTTPClient
+    String globalUrl = "http://192.168.43.169:8080/api/messages/111";
+
 
   // char * GlobalUrl = "GET http://192.168.1.30/api/achref_meghirbi/messages"; // change your personal url
     http.begin(globalUrl);  //Specify request destination
-    int httpCode = http.GET();
-    Serial.println(httpCode);       
+    int httpCode = http.GET();        
    //Send the request
    if (httpCode > 0) { //Check the returning code
       payload = http.getString();   //Get the request response payload
-      //Serial.println(payload);       
       JsonArray& root = jsonBuffer.parseArray(strToChar(payload));
+      Serial.println("root");
       Serial.print("Content :");
       int i = 0;
-     // String msgs[root.size()]; 
-     // String users [root.size()];
+      String msgs[root.size()]; 
+      String users [root.size()];
       for ( i ; i<root.size();i++){
-       //  msgs[i] = root[i]["content"].as<String>();
-       //  JsonObject& user = root[i]["user"];
-       //  users[i] = user["username"].as<String>();
-       // Serial.println(users[i]);  
-                 helloWorld(root[i]);
-
+         msgs[i] = root[i]["content"].as<String>();
+         JsonObject& user = root[i]["user"];
+         users[i] = user["username"].as<String>();
+         Serial.println(users[i]);  
              
       }
     /*  while (count > 1) {
@@ -274,19 +247,15 @@ if (client.connect(server1, 80)) {
       }
       */
       
-     // displayMessages(msgs,users);
-      jsonBuffer.clear();      
-   }
-}
-   http.end();
-}
-
-//client.stop();
+    //  displayMessages(msgs,users);
+   //}
+  // http.end();
+/*}
  
  
 delay(3000);    //Send a request every 30 seconds
   
-}
+}*/
 
 
 /*char * consumeWebService(String url) {
@@ -310,15 +279,3 @@ char* strToChar(String s) {
   s.toCharArray(ret, bufSize);
   return ret;
 }
-
-
-
-
-
-
-
-
-
-
-
- 
